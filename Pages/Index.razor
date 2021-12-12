@@ -1,7 +1,23 @@
 ﻿@page "/"
 
-<h1>Hello, world!</h1>
+<h1>Next round generator para o Ranking FTN de Samurai Shodown</h1>
 
-Welcome to your new app.
+<h2>Instruções</h2>
 
-<SurveyPrompt Title="How is Blazor working for you?" />
+<ul>
+    <li>Abra a <a href="https://docs.google.com/spreadsheets/d/e/2PACX-1vTGU81cRh8hZhJf9i8zDHt853x6f5r6ZR8wXkofA8N49XVoXeeLMk6T3ncHBZfiZu2hh2NiYfJrudDQ/pubhtml#" target="_blank"> tabela de Ranking Público</a></li>
+    <li>Selecione a aba com os resultados (PS4 ou PC)</li>
+    <li>Selecione todo o conteúdo (Ctrl + A)</li>
+    <li>Copie (Ctrl-C)</li>
+    <li>Cole no campo Lutas</li>
+    <li>Copie a lista de jogadores sorteada para o campo Sorteio (um nome por linha)</li>
+    <li>Pressione "Gerar" e aguarde.</li>
+    <li>Uma lista reordenada para não haver lutas já realizadas será gerada automaticamente.</li>
+    <li>Copie a lista e cole na planilha como já era feito anteriormente.</li>
+    <li>O jogador que eventualmente ser pareado com BYE não tem como jogar na semana por ter um número ímpar de jogadores.</li>
+</ul>
+
+<Generator />
+
+<footer>P.S.: Blazor is the shit, man. No JS bullshit, thank fuck.</footer>
+
