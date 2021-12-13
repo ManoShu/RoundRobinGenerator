@@ -21,6 +21,9 @@
         @"(?<trash>.{0,})\t(?<data>\d{2}/\d{2}/\d{4})?\t(?<player1>[a-z-_.|ç•]{1,})\t(?<score1>[^\t]{0,})\t(?<score2>[^\t]{0,})\t(?<player2>[^\n]{1,})\n"
         ;
     const string EMPTY_SLOT = "BYE";
+
+    const int TIMEOUT_MATCHING = 60;
+    
     private string Lutas { get; set; }
     private string Sorteio { get; set; }
     private string Output { get; set; }
@@ -60,7 +63,7 @@
         bool temMatchesRepetidas = true;
         int loopCount = 0;
 
-        while (temMatchesRepetidas && loopCount < nomesSorteio.Count)
+        while (temMatchesRepetidas && loopCount <= TIMEOUT_MATCHING)
         {
             temMatchesRepetidas = false;
             for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
@@ -76,7 +79,15 @@
                 ))
                 {
                     nomesSorteio.RemoveAt(idx + 1);//tira o player 2
-                    nomesSorteio.Add(player2); // e adiciona no fim da lista
+                    //se não for o último
+                    if(idx < nomesSorteio.Count - 1)
+                    {
+                        nomesSorteio.Add(player2); // adiciona no fim da lista
+                    }
+                    else
+                    {
+                        nomesSorteio.Insert(0, player2); // adiciona ao topo
+                    }
                     temMatchesRepetidas = true; //continua a verificar
                     break;
                 }
@@ -84,10 +95,9 @@
 
             loopCount++;
         }
-
         if (temMatchesRepetidas)
         {
-            Output = "SEM MATCHES. ERRO DE LÓGICA OU O RANKING ACABOU";
+            Output += "SEM MATCHES. ERRO DE LÓGICA OU O RANKING ACABOU";
         }
         else
         {
