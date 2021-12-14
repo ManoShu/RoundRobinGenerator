@@ -30,6 +30,26 @@
     private string Sorteio { get; set; }
     private string Output { get; set; }
 
+    private bool PlayerFoughtTheRestOfTheList(List<Tuple<string,string>> matches, List<string> playerList, int player1Index)
+    {
+        bool result = true;
+
+        var nextPlayerIndex = player1Index + 1;
+        var player1Name = playerList[player1Index];
+
+        while(nextPlayerIndex < playerList.Count)
+        {
+            var player2Name = playerList[nextPlayerIndex];
+            result &= matches.Any(x => 
+                (x.Item1 == player1Name && x.Item2 == player2Name) ||
+                (x.Item1 == player2Name && x.Item2 == player1Name)                
+                );
+            nextPlayerIndex++;
+        }
+
+        return result;
+    }
+
     private void GerarRound()
     {
         var theRegex = new Regex(MAGIC_REGEX,
@@ -42,16 +62,12 @@
 
         var matchesAnteriores = new List<Tuple<string, string>>();
 
-
-        Console.WriteLine("Matches base:");
         foreach (Match match in matchesBase)
         {
             var matchPlayers = new Tuple<string, string>(
             match.Groups["player1"].Value.Trim(),
             match.Groups["player2"].Value.Trim()
             );
-
-            Console.WriteLine($"[{matchPlayers.Item1}] x [{matchPlayers.Item2}]");
 
             //TODO: ver se empates contam ou não
             //if(match.Groups["score1"].Value.Trim() != "-")
@@ -65,6 +81,13 @@
         .Select(x => x.Trim())
         .ToList();
 
+        //se for quantidade impar
+        if(nomesSorteio.Count % 2 != 0)
+        {
+            //adiciona o espaço vazio para ficar par
+            nomesSorteio.Add(EMPTY_SLOT);
+        }
+
         bool temMatchesRepetidas = true;
         int loopCount = 0;
 
@@ -74,9 +97,7 @@
             for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
             {
                 var player1 = nomesSorteio[idx];
-                var player2 = ((idx + 1) < nomesSorteio.Count) ? nomesSorteio[idx + 1] : EMPTY_SLOT;
-                var thePair = new Tuple<string, string>(player1, player2);
-
+                var player2 = nomesSorteio[idx + 1];
 
                 //verifica se o par de jogadores já se enfrentou anteriormente
                 if (matchesAnteriores.Any(x => 
@@ -84,16 +105,27 @@
                 (x.Item1 == player2 && x.Item2 == player1)                
                 ))
                 {
-                    nomesSorteio.RemoveAt(idx + 1);//tira o player 2
-                    //se não for o último
-                    if(idx < nomesSorteio.Count - 1)
+                    if(PlayerFoughtTheRestOfTheList(matchesAnteriores, nomesSorteio, idx))
                     {
-                        nomesSorteio.Add(player2); // adiciona no fim da lista
+                        nomesSorteio.RemoveAt(idx);
+                        nomesSorteio.Insert(0, player1);
                     }
                     else
                     {
-                        nomesSorteio.Insert(0, player2); // adiciona ao topo
+                        nomesSorteio.RemoveAt(idx + 1);//tira o player 2
+
+                        //se for o último
+                        if(idx == nomesSorteio.Count - 1) // como removi o player 2, checo pelo player 1 ser o último da lista
+                        {
+                            nomesSorteio.Insert(0, player2); // adiciona ao topo
+                            
+                        }
+                        else
+                        {
+                            nomesSorteio.Add(player2); // adiciona no fim da lista
+                        }
                     }
+
                     temMatchesRepetidas = true; //continua a verificar
                     break;
                 }
@@ -104,24 +136,16 @@
 
         if (temMatchesRepetidas)
         {
-            Output += "SEM MATCHES. ERRO DE LÓGICA OU O RANKING ACABOU";
+            Output += "ERRO DE LÓGICA OU O RANKING ACABOU. LISTA MAIS RECENTE:";
         }
-        else
+         
+        for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
         {
-            Console.WriteLine("Próximas matches:");
-            for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
-            {
-                var player1 = nomesSorteio[idx];
-                var player2 = ((idx + 1) < nomesSorteio.Count) ? nomesSorteio[idx + 1] : EMPTY_SLOT;
+            var player1 = nomesSorteio[idx];
+            var player2 = ((idx + 1) < nomesSorteio.Count) ? nomesSorteio[idx + 1] : EMPTY_SLOT;
 
-                Console.WriteLine($"[{player1}] x [{player2}]");
-
-
-                Output += $"{player1} x {player2}{Environment.NewLine}";
-            }
+            Output += $"{player1}{Environment.NewLine}{player2}{Environment.NewLine}";
         }
-
-
 
     }
 }
