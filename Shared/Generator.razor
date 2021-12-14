@@ -16,13 +16,15 @@
 </section>
 
 @code {
+
     const string MAGIC_REGEX =
         //@"(?<trash>.{0,})\t(?<data>\d{2}/\d{2}/\d{4})?\t(?<player1>[a-z-_.|ç•]{1,})\t(?<score1>[^\t]{0,})\t(?<score2>[^\t]{0,})\t(?<player2>.{1,})\n"
-        @"(?<trash>.{0,})\t(?<data>\d{2}/\d{2}/\d{4})?\t(?<player1>[a-z-_.|ç•]{1,})\t(?<score1>[^\t]{0,})\t(?<score2>[^\t]{0,})\t(?<player2>[^\n]{1,})\n"
+        //@"(?<trash>.{0,})\t(?<data>\d{2}/\d{2}/\d{4})?\t(?<player1>[a-z-_.|ç•]{1,})\t(?<score1>[^\t]{0,})\t(?<score2>[^\t]{0,})\t(?<player2>[^\n]{1,})\n"
+        @"(?<trash>.{0,})\t(?<data>\d{2}/\d{2}/\d{4})?\t(?<player1>[á0-9/a-z-_.|ç• ]{1,})\t(?<score1>[^\t]{0,2})\t(?<score2>[^\t]{0,2})\t(?<player2>[^\n]{1,})\n"
         ;
     const string EMPTY_SLOT = "BYE";
 
-    const int TIMEOUT_MATCHING = 60;
+    const int TIMEOUT_MATCHING = 1000;
     
     private string Lutas { get; set; }
     private string Sorteio { get; set; }
@@ -41,12 +43,15 @@
         var matchesAnteriores = new List<Tuple<string, string>>();
 
 
+        Console.WriteLine("Matches base:");
         foreach (Match match in matchesBase)
         {
             var matchPlayers = new Tuple<string, string>(
             match.Groups["player1"].Value.Trim(),
             match.Groups["player2"].Value.Trim()
             );
+
+            Console.WriteLine($"[{matchPlayers.Item1}] x [{matchPlayers.Item2}]");
 
             //TODO: ver se empates contam ou não
             //if(match.Groups["score1"].Value.Trim() != "-")
@@ -72,6 +77,7 @@
                 var player2 = ((idx + 1) < nomesSorteio.Count) ? nomesSorteio[idx + 1] : EMPTY_SLOT;
                 var thePair = new Tuple<string, string>(player1, player2);
 
+
                 //verifica se o par de jogadores já se enfrentou anteriormente
                 if (matchesAnteriores.Any(x => 
                 (x.Item1 == player1 && x.Item2 == player2) ||
@@ -95,18 +101,23 @@
 
             loopCount++;
         }
+
         if (temMatchesRepetidas)
         {
             Output += "SEM MATCHES. ERRO DE LÓGICA OU O RANKING ACABOU";
         }
         else
         {
+            Console.WriteLine("Próximas matches:");
             for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
             {
                 var player1 = nomesSorteio[idx];
                 var player2 = ((idx + 1) < nomesSorteio.Count) ? nomesSorteio[idx + 1] : EMPTY_SLOT;
 
-                Output += $"{player1}{Environment.NewLine}{player2}{Environment.NewLine}";
+                Console.WriteLine($"[{player1}] x [{player2}]");
+
+
+                Output += $"{player1} x {player2}{Environment.NewLine}";
             }
         }
 
