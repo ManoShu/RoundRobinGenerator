@@ -50,15 +50,13 @@
         return result;
     }
 
-    private void GerarRound()
+    private List<Tuple<string, string>> ParseMatches()
     {
         var theRegex = new Regex(MAGIC_REGEX,
-        RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.ExplicitCapture
+            RegexOptions.IgnoreCase | RegexOptions.Multiline | RegexOptions.IgnorePatternWhitespace | RegexOptions.ExplicitCapture
         );
 
         var matchesBase = theRegex.Matches(Lutas);
-
-        Output = string.Empty;
 
         var matchesAnteriores = new List<Tuple<string, string>>();
 
@@ -76,6 +74,11 @@
             }
         }
 
+        return matchesAnteriores;
+    }
+
+    private List<string> ParseNames()
+    {
         var nomesSorteio = Sorteio
         .Split(new string[] { Environment.NewLine }, StringSplitOptions.RemoveEmptyEntries)
         .Select(x => x.Trim())
@@ -87,9 +90,34 @@
             //adiciona o espaço vazio para ficar par
             nomesSorteio.Add(EMPTY_SLOT);
         }
+        return nomesSorteio;
+    }
 
+    private int CalculateRepeatCount(List<Tuple<string,string>> matches, List<string> nomesSorteio)
+    {
+        var count = 0;
+        for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
+        {
+            var player1 = nomesSorteio[idx];
+            var player2 = nomesSorteio[idx + 1];
+
+             if (matches.Any(x => 
+                (x.Item1 == player1 && x.Item2 == player2) ||
+                (x.Item1 == player2 && x.Item2 == player1)                
+                ))
+                {
+                    count++;
+                }
+        }
+        return count;
+    }
+
+    private bool ReordernarListaSorteio(List<Tuple<string,string>> matches, List<string> nomesSorteio){
         bool temMatchesRepetidas = true;
         int loopCount = 0;
+
+        int maxRepeats = int.MaxValue;
+        List<string> lowestRepeatList = null;
 
         while (temMatchesRepetidas && loopCount <= TIMEOUT_MATCHING)
         {
@@ -100,12 +128,12 @@
                 var player2 = nomesSorteio[idx + 1];
 
                 //verifica se o par de jogadores já se enfrentou anteriormente
-                if (matchesAnteriores.Any(x => 
+                if (matches.Any(x => 
                 (x.Item1 == player1 && x.Item2 == player2) ||
                 (x.Item1 == player2 && x.Item2 == player1)                
                 ))
                 {
-                    if(PlayerFoughtTheRestOfTheList(matchesAnteriores, nomesSorteio, idx))
+                    if(PlayerFoughtTheRestOfTheList(matches, nomesSorteio, idx))
                     {
                         nomesSorteio.RemoveAt(idx);
                         nomesSorteio.Insert(0, player1);
@@ -131,12 +159,37 @@
                 }
             }
 
+            var repeatCount = CalculateRepeatCount(matches, nomesSorteio);
+            if(repeatCount < maxRepeats)
+            {
+                maxRepeats = repeatCount;
+                lowestRepeatList = nomesSorteio.ToList();
+            }
+
             loopCount++;
         }
 
+        if(temMatchesRepetidas)
+        {
+            nomesSorteio = lowestRepeatList;
+        }
+
+        return temMatchesRepetidas;
+    }
+
+    private void GerarRound()
+    {
+        var matchesAnteriores = ParseMatches();
+
+        var nomesSorteio = ParseNames();
+
+        var temMatchesRepetidas = ReordernarListaSorteio(matchesAnteriores, nomesSorteio);
+
+        Output = string.Empty;
+
         if (temMatchesRepetidas)
         {
-            Output += "ERRO DE LÓGICA OU O RANKING ACABOU. LISTA MAIS RECENTE:";
+            Output += "Há matches repetidas. Lista com menos repetições:" + Environment.NewLine;
         }
          
         for (int idx = 0; idx < nomesSorteio.Count; idx += 2)
