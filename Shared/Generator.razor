@@ -2,18 +2,27 @@
 @inject IJSRuntime JSRuntime
 
 <div class="row">
-    <textarea @bind="Lutas" id="txtLutas" name="txtLutas" placeholder="Lutas" class="col-sm-6" rows="5"></textarea>
-    <textarea @bind="Sorteio" id="txtSorteio" name="txtSorteio" placeholder="Sorteio" class="col-sm-6"
-        rows="5"></textarea>
+    <div class="col-sm-3">
+        <div class="text-center"><label class="text-center">Lutas já realizadas</label></div>
+        <div class="text-center"><textarea @bind="Lutas" id="txtLutas" name="txtLutas" placeholder="Lutas" rows="10"></textarea></div>
+    </div>
+    <div class="col-sm-3">
+        <div class="text-center"><label>Nomes para sorteio</label></div>
+        <div class="text-center"><textarea @bind="Sorteio" id="txtSorteio" name="txtSorteio" placeholder="Sorteio" rows="10"></textarea></div>
+    </div>
+    <div class="col-sm-3">
+        <div class="row h-100">
+            <div style="margin: auto;">
+                <input type="button" class="btn btn-success " value="Gerar >>>" @onclick="GerarRound" />
+            </div>
+        </div>       
+    </div>
+    <div class="col-sm-3">
+        <div class="text-center"><label>Lista ordenada</label></div>
+        <div class="text-center"><textarea @bind="Output" class="col-sm-12" rows="10" readonly="readonly"></textarea></div>
+    </div>
+    
 </div>
-<div class="row">
-    <input type="button" class="btn btn-success col-sm-12" value="Gerar" @onclick="GerarRound" />
-</div>
-<section id="output_section">
-<div class="row">
-    <textarea @bind="Output" class="col-sm-12" rows="20" readonly="readonly"></textarea>
-</div>
-</section>
 
 @code {
 
